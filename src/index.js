@@ -7,13 +7,23 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
-import { Router } from 'itty-router';
 import Sqids from 'sqids';
+import { createCors, error, json, Router } from 'itty-router';
 
 // Create a new router
 const router = Router();
 
 const sqids = new Sqids();
+
+// Add CORS headers to every request
+const { preflight, corsify } = createCors({
+	origin: '*',
+	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'X-API-KEY'],
+	maxAge: 86400,
+});
+
+router.all('*', preflight);
 
 // upload image
 router.put('/upload', async (request, env, context) => {
@@ -160,7 +170,7 @@ router.get('/images/:filename.:extension', async (request, env, context) => {
 router.all('*', () => new Response('404, not found!', { status: 404 }));
 
 export default {
-	fetch: router.handle,
+	fetch: (request) => router.handle(request).catch(error).then(corsify),
 };
 
 function generateUniqueIDFromTimestamp() {
