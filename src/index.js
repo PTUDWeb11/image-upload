@@ -170,7 +170,7 @@ router.get('/images/:filename.:extension', async (request, env, context) => {
 router.all('*', () => new Response('404, not found!', { status: 404 }));
 
 export default {
-	fetch: (request) => router.handle(request).catch(error).then(corsify),
+	fetch: (request, env, context) => router.handle(request, env, context).catch(error).then(corsify),
 };
 
 function generateUniqueIDFromTimestamp() {
